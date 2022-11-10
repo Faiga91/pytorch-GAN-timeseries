@@ -1,7 +1,7 @@
 import argparse
 import torch
 from utils import DatasetGenerator
-from btp_dataset import BtpDataset
+from btp_dataset import IntelDataset
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint_path', required=True, help='Path of the generator checkpoint')
@@ -13,7 +13,7 @@ parser.add_argument('--size', default=1000, help='Size of the dataset to generat
 opt = parser.parse_args()
 
 #If an unknown option is provided for the dataset, then don't use any normalization
-dataset = BtpDataset(opt.dataset_path) if opt.dataset == 'btp' else None
+dataset = IntelDataset(opt.dataset_path) if opt.dataset == 'btp' else None
 
 model = torch.load(opt.checkpoint_path)
 generator = DatasetGenerator(generator=model, dataset=dataset) #Using default params

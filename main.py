@@ -8,7 +8,7 @@ import torch.optim as optim
 import torch.utils.data
 import torchvision
 import datetime
-from btp_dataset import BtpDataset
+from btp_dataset import IntelDataset
 from utils import time_series_to_plot
 from tensorboardX import SummaryWriter
 from models.recurrent_models import LSTMGenerator, LSTMDiscriminator
@@ -68,7 +68,7 @@ if torch.cuda.is_available() and not opt.cuda:
     print("You have a cuda device, so you might want to run with --cuda as option")
 
 if opt.dataset == "btp":
-    dataset = BtpDataset(opt.dataset_path)
+    dataset = IntelDataset(opt.dataset_path)
 assert dataset
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
                                          shuffle=True, num_workers=int(opt.workers))
@@ -134,7 +134,7 @@ for epoch in range(opt.epochs):
         netD.zero_grad()
         real = data.to(device)
         batch_size, seq_len = real.size(0), real.size(1)
-        label = torch.full((batch_size, seq_len, 1), real_label, device=device)
+        label = torch.full((batch_size, seq_len, 1), real_label, device=device).to(torch.float32)
 
         output = netD(real)
         errD_real = criterion(output, label)
@@ -214,7 +214,7 @@ for epoch in range(opt.epochs):
     
     fake = netG(fixed_noise)
     fake_plot = time_series_to_plot(dataset.denormalize(fake))
-    torchvision.utils.save_image(fake_plot, os.path.join(opt.imf, opt.run_tag+'_epoch'+str(epoch)+'.jpg'))
+    #torchvision.utils.save_image(fake_plot, os.path.join(opt.imf, opt.run_tag+'_epoch'+str(epoch)+'.jpg'))
     if (epoch % opt.tensorboard_image_every == 0) or (epoch == (opt.epochs - 1)):
         writer.add_image("Fake", fake_plot, epoch)
                              

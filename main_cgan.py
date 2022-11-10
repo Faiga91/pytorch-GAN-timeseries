@@ -8,7 +8,7 @@ import torch.optim as optim
 import torch.utils.data
 import torchvision
 import datetime
-from btp_dataset import BtpDataset
+from btp_dataset import IntelDataset
 from utils import time_series_to_plot
 from tensorboardX import SummaryWriter
 from models.recurrent_models import LSTMGenerator, LSTMDiscriminator
@@ -65,7 +65,7 @@ if torch.cuda.is_available() and not opt.cuda:
     print("You have a cuda device, so you might want to run with --cuda as option")
 
 if opt.dataset == "btp":
-    dataset = BtpDataset(opt.dataset_path)
+    dataset = IntelDataset(opt.dataset_path)
 assert dataset
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
                                          shuffle=True, num_workers=int(opt.workers))

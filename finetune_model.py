@@ -2,7 +2,7 @@ import argparse
 import torch
 from torch import nn, optim
 from utils import DatasetGenerator
-from btp_dataset import BtpDataset
+from btp_dataset import IntelDataset
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint_path', required=True, help='Path of the generator checkpoint')
@@ -15,7 +15,7 @@ parser.add_argument('--learning_rate', type=float, default=2e-4)
 opt = parser.parse_args()
 
 #If an unknown option is provided for the dataset, then don't use any normalization
-dataset = BtpDataset(opt.dataset_path)
+dataset = IntelDataset(opt.dataset_path)
 
 model = torch.load(opt.checkpoint_path)
 
