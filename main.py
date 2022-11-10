@@ -1,6 +1,8 @@
 import argparse
 import os
 import random
+import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
@@ -119,6 +121,8 @@ fake_label = 0
 optimizerD = optim.Adam(netD.parameters(), lr=opt.lr)
 optimizerG = optim.Adam(netG.parameters(), lr=opt.lr)
 
+g_losses, d_losses, dx_loss, dgz_loss = [], [], [], []
+
 for epoch in range(opt.epochs):
     for i, data in enumerate(dataloader, 0):
         niter = epoch * len(dataloader) + i
@@ -171,7 +175,6 @@ for epoch in range(opt.epochs):
         errG = criterion(output, label)
         errG.backward()
         D_G_z2 = output.mean().item()
-        
 
         if opt.delta_condition:
             #If option is passed, alternate between the losses instead of using their sum
@@ -209,7 +212,12 @@ for epoch in range(opt.epochs):
         writer.add_scalar('GeneratorLoss', errG.item(), niter)
         writer.add_scalar('D of X', D_x, niter) 
         writer.add_scalar('D of G of z', D_G_z1, niter)
-        
+
+        g_losses.append(errG.item())
+        d_losses.append(errD.item())
+        dx_loss.append(D_x)
+        dgz_loss.append(D_G_z1)
+
     ##### End of the epoch #####
     real_plot = time_series_to_plot(dataset.denormalize(real_display))
     if (epoch % opt.tensorboard_image_every == 0) or (epoch == (opt.epochs - 1)):
@@ -225,3 +233,8 @@ for epoch in range(opt.epochs):
     if (epoch % opt.checkpoint_every == 0) or (epoch == (opt.epochs - 1)):
         torch.save(netG, '%s/%s_netG_epoch_%d.pth' % (opt.outf, opt.run_tag, epoch))
         torch.save(netD, '%s/%s_netD_epoch_%d.pth' % (opt.outf, opt.run_tag, epoch))
+    
+torch.save(netG, './Results/netG.pkl')
+loss_df = pd.DataFrame(columns = ['gloss', 'dloss', 'dxloss', 'dgzloss'])
+loss_df['gloss'], loss_df['dloss'], loss_df['dxloss'], loss_df['dgzloss'] = g_losses, d_losses, dx_loss, dgz_loss
+loss_df.to_csv('./Results/losses.csv', index = False)
