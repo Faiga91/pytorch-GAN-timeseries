@@ -85,7 +85,7 @@ if opt.dis_type == "lstm":
 if opt.dis_type == "cnn":
     netD = CausalConvDiscriminator(input_size=1, n_layers=8, n_channel=10, kernel_size=8, dropout=0).to(device)
 if opt.gen_type == "lstm":
-    netG = LSTMGenerator(in_dim=in_dim, out_dim=1, hidden_dim=256).to(device)
+    netG = LSTMGenerator(in_dim=in_dim, out_dim=1, hidden_dim=256, device = device).to(device)
 if opt.gen_type == "cnn":
     netG = CausalConvGenerator(noise_size=in_dim, output_size=1, n_layers=8, n_channel=10, kernel_size=8, dropout=0.2).to(device)
     
@@ -109,6 +109,7 @@ fixed_noise = torch.randn(opt.batchSize, seq_len, nz, device=device)
 if opt.delta_condition:
     #Sample both deltas and noise for visualization
     deltas = dataset.sample_deltas(opt.batchSize).unsqueeze(2).repeat(1, seq_len, 1)
+    deltas = deltas.to(device)
     fixed_noise = torch.cat((fixed_noise, deltas), dim=2)
 
 real_label = 1
@@ -146,6 +147,7 @@ for epoch in range(opt.epochs):
         if opt.delta_condition:
             #Sample a delta for each batch and concatenate to the noise for each timestep
             deltas = dataset.sample_deltas(batch_size).unsqueeze(2).repeat(1, seq_len, 1)
+            deltas = deltas.to(device)
             noise = torch.cat((noise, deltas), dim=2)
         fake = netG(noise)
         label.fill_(fake_label)
@@ -178,6 +180,7 @@ for epoch in range(opt.epochs):
                 netG.zero_grad()
             noise = torch.randn(batch_size, seq_len, nz, device=device)
             deltas = dataset.sample_deltas(batch_size).unsqueeze(2).repeat(1, seq_len, 1)
+            deltas = deltas.to(device)
             noise = torch.cat((noise, deltas), dim=2)
             #Generate sequence given noise w/ deltas and deltas
             out_seqs = netG(noise)

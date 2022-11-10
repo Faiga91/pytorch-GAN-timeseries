@@ -82,7 +82,7 @@ if opt.dis_type == "lstm":
 if opt.dis_type == "cnn":
     netD = CausalConvDiscriminator(input_size=2, n_layers=8, n_channel=10, kernel_size=8, dropout=0).to(device)
 if opt.gen_type == "lstm":
-    netG = LSTMGenerator(in_dim=in_dim, out_dim=1, hidden_dim=256).to(device)
+    netG = LSTMGenerator(in_dim=in_dim, out_dim=1, hidden_dim=256, device = device).to(device)
 if opt.gen_type == "cnn":
     netG = CausalConvGenerator(noise_size=in_dim, output_size=1, n_layers=8, n_channel=10, kernel_size=8, dropout=0.2).to(device)
     
