@@ -222,7 +222,7 @@ for epoch in range(opt.epochs):
     real_plot = time_series_to_plot(dataset.denormalize(real_display))
     if (epoch % opt.tensorboard_image_every == 0) or (epoch == (opt.epochs - 1)):
         writer.add_image("Real", real_plot, epoch)
-    
+
     fake = netG(fixed_noise)
     fake_plot = time_series_to_plot(dataset.denormalize(fake))
     #torchvision.utils.save_image(fake_plot, os.path.join(opt.imf, opt.run_tag+'_epoch'+str(epoch)+'.jpg'))

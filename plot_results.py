@@ -11,7 +11,7 @@ import torch
 from torchinfo import summary
 
 from sklearn.metrics import mean_squared_error
-
+from btp_dataset import IntelDataset
 
 #from data_loading import real_data_loading
 #from sensegan_star import get_noise
@@ -40,58 +40,46 @@ def plot_losses(folder):
         plt.show()
         plt.savefig(folder + "losses.png", bbox_inches='tight', dpi=700)
 
-def plot_helper(fake_df, ori_data, model_name, folder):
+def plot_helper(fake_df, ori_data):
     """
     This helper will get the no of columns and rows for subplot,
     and plot the fake versus the original data.
     """
-    num_subplots = len(fake_df.columns)
-    rows = int(np.sqrt(num_subplots))
-    cols = int(num_subplots/ rows)
-    if rows * cols != num_subplots:
-        rows += 1
+    fig, axes = plt.subplots(figsize=(15,7), dpi=700)
 
-    fig, axes = plt.subplots(rows, cols, figsize=(15,7), dpi=700)
+    plt.plot(fake_df['Temperature'], label ='Fake')
+    plt.plot(ori_data['Temperature'][:168], label ='Real')
+    plt.title(str('Temperature'))
 
-    axes_list = []
-    for ax_i in axes:
-        for ax_j in ax_i:
-            axes_list.append(ax_j)
+    _rmse = mean_squared_error(ori_data['Temperature'][:168], fake_df['Temperature'], squared = False)
+    _rmse_text = 'RMSE = ' + str(round(_rmse,2))
+    plt.text(0.5, 0.95, _rmse_text, horizontalalignment='center',
+                        verticalalignment='center',
+                        bbox=dict(facecolor='white', alpha=0.2))
+    plt.legend()
 
-    for i, col in enumerate(fake_df.columns):
-        axes_list[i].plot(fake_df[col], label ='Fake')
-        #axes_list[i].plot(ori_data[col][:168], label ='Real')
-        axes_list[i].title.set_text(str(col))
-
-        _rmse = mean_squared_error(ori_data[col][:168], fake_df[col], squared = False)
-        _rmse_text = 'RMSE = ' + str(round(_rmse,2))
-        axes_list[i].text(0.5, 0.95, _rmse_text, horizontalalignment='center',
-                            verticalalignment='center', transform=axes_list[i].transAxes,
-                            bbox=dict(facecolor='white', alpha=0.2))
-        axes_list[i].legend()
-
-    plt.suptitle(model_name)
-    fig.savefig(folder + model_name + '_.png', bbox_inches='tight', dpi=700)
+    plt.suptitle('Real Vs. Synthetic data')
+    fig.savefig('./Results/realvfake.png', bbox_inches='tight', dpi=700)
 
 def plot_generated_data(folder):
     """
     Plot generated vs real data on the same graph.
     """
+    ori_data = pd.read_csv('data.csv')[['Temperature']]
+    dataset_loader = IntelDataset('data.csv')
     pkl_files = glob.glob(folder + "*.pkl")
     for file_name in pkl_files:
         model_name = file_name[7:-4]
-        
-        ori_data = pd.DataFrame(ori_data, columns=['Temeperature'])
-        generator_ = torch.load(file_name, map_location ='cuda')
+        generator_ = torch.load(file_name, map_location ='cpu')
         summary(generator_)
-        generated_data = generator_(get_noise(168, len(columns_) , 'cuda'))
+        noise = torch.randn(1, 168, 101, device='cpu')
+        generated_data = generator_(noise)
+        generated_data = dataset_loader.denormalize(generated_data)
         generated_data = generated_data.cpu().detach().numpy()
         generated_data = generated_data.reshape(generated_data.shape[1], generated_data.shape[2])
 
-        fake_df = transformer.inverse_transform(generated_data)
-        fake_df = pd.DataFrame(fake_df, columns=columns_)
-
-        plot_helper(fake_df, ori_data, model_name, folder)
+        fake_df = pd.DataFrame(generated_data, columns=['Temperature'])
+        plot_helper(fake_df, ori_data[:168])
 
 def main(args):
     """
@@ -99,7 +87,7 @@ def main(args):
     the other helper functions in this file.
     """
     plot_losses(args.folder)
-    #plot_generated_data(args.folder)
+    plot_generated_data(args.folder)
 
 if __name__ == '__main__':
     parser_ = argparse.ArgumentParser()
