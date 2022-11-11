@@ -2,7 +2,7 @@ import argparse
 import torch
 from torch import nn, optim
 from utils import DatasetGenerator
-from btp_dataset import IntelDataset
+from load_dataset import IntelDataset
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint_path', required=True, help='Path of the generator checkpoint')

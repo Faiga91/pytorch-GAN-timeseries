@@ -10,14 +10,14 @@ import torch.optim as optim
 import torch.utils.data
 import torchvision
 import datetime
-from btp_dataset import IntelDataset
+from load_dataset import IntelDataset
 from utils import time_series_to_plot
 from tensorboardX import SummaryWriter
-from models.recurrent_models import LSTMGenerator, LSTMDiscriminator
+from models.recurrent_models import LSTMGenerator, LSTMDiscriminator, GRUGenerator
 from models.convolutional_models import CausalConvGenerator, CausalConvDiscriminator
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', default="btp", help='dataset to use (only btp for now)')
+parser.add_argument('--dataset', default='intel', choices = ['btp', 'intel'], help='dataset to use (only btp for now)')
 parser.add_argument('--dataset_path', required=True, help='path to dataset')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=2)
 parser.add_argument('--batchSize', type=int, default=16, help='input batch size')
@@ -38,7 +38,7 @@ parser.add_argument('--delta_condition', action='store_true', help='whether to u
 parser.add_argument('--delta_lambda', type=int, default=10, help='weight for the delta condition')
 parser.add_argument('--alternate', action='store_true', help='whether to alternate between adversarial and mse loss in generator')
 parser.add_argument('--dis_type', default='cnn', choices=['cnn','lstm'], help='architecture to be used for discriminator to use')
-parser.add_argument('--gen_type', default='lstm', choices=['cnn','lstm'], help='architecture to be used for generator to use')
+parser.add_argument('--gen_type', default='lstm', choices=['cnn','lstm', 'gru'], help='architecture to be used for generator to use')
 opt = parser.parse_args()
 
 #Create writer for tensorboard
@@ -69,7 +69,7 @@ cudnn.benchmark = True
 if torch.cuda.is_available() and not opt.cuda:
     print("You have a cuda device, so you might want to run with --cuda as option")
 
-if opt.dataset == "btp":
+if opt.dataset == "intel":
     dataset = IntelDataset(opt.dataset_path)
 assert dataset
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
@@ -88,6 +88,8 @@ if opt.dis_type == "cnn":
     netD = CausalConvDiscriminator(input_size=1, n_layers=8, n_channel=10, kernel_size=8, dropout=0).to(device)
 if opt.gen_type == "lstm":
     netG = LSTMGenerator(in_dim=in_dim, out_dim=1, hidden_dim=256, device = device).to(device)
+if opt.gen_type == 'gru':
+    netG = GRUGenerator(in_dim=in_dim, out_dim=1, hidden_dim=256, device = device).to(device)
 if opt.gen_type == "cnn":
     netG = CausalConvGenerator(noise_size=in_dim, output_size=1, n_layers=8, n_channel=10, kernel_size=8, dropout=0.2).to(device)
     

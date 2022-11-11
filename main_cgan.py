@@ -8,7 +8,7 @@ import torch.optim as optim
 import torch.utils.data
 import torchvision
 import datetime
-from btp_dataset import IntelDataset
+from load_dataset import IntelDataset
 from utils import time_series_to_plot
 from tensorboardX import SummaryWriter
 from models.recurrent_models import LSTMGenerator, LSTMDiscriminator
@@ -85,6 +85,7 @@ if opt.gen_type == "lstm":
     netG = LSTMGenerator(in_dim=in_dim, out_dim=1, hidden_dim=256, device = device).to(device)
 if opt.gen_type == "cnn":
     netG = CausalConvGenerator(noise_size=in_dim, output_size=1, n_layers=8, n_channel=10, kernel_size=8, dropout=0.2).to(device)
+
     
 assert netG
 assert netD

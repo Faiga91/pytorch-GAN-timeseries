@@ -11,7 +11,7 @@ import torch
 from torchinfo import summary
 
 from sklearn.metrics import mean_squared_error
-from btp_dataset import IntelDataset
+from load_dataset import IntelDataset
 
 #from data_loading import real_data_loading
 #from sensegan_star import get_noise
