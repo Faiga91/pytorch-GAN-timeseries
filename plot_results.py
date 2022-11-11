@@ -53,13 +53,14 @@ def plot_helper(fake_df, ori_data):
 
     _rmse = mean_squared_error(ori_data['Temperature'][:168], fake_df['Temperature'], squared = False)
     _rmse_text = 'RMSE = ' + str(round(_rmse,2))
-    plt.text(0.5, 0.95, _rmse_text, horizontalalignment='center',
-                        verticalalignment='center',
-                        bbox=dict(facecolor='white', alpha=0.2))
-    plt.legend()
+    axes.text(0.2, 0.9, _rmse_text, horizontalalignment='center', 
+                verticalalignment='center', transform=axes.transAxes,
+                bbox=dict(facecolor='red', alpha=0.2))
 
+    plt.legend()
     plt.suptitle('Real Vs. Synthetic data')
     fig.savefig('./Results/realvfake.png', bbox_inches='tight', dpi=700)
+    plt.show()
 
 def plot_generated_data(folder):
     """
@@ -70,9 +71,9 @@ def plot_generated_data(folder):
     pkl_files = glob.glob(folder + "*.pkl")
     for file_name in pkl_files:
         model_name = file_name[7:-4]
-        generator_ = torch.load(file_name, map_location ='cpu')
+        generator_ = torch.load(file_name, map_location ='cuda')
         summary(generator_)
-        noise = torch.randn(1, 168, 101, device='cpu')
+        noise = torch.randn(1, 168, 101, device='cuda')
         generated_data = generator_(noise)
         generated_data = dataset_loader.denormalize(generated_data)
         generated_data = generated_data.cpu().detach().numpy()
