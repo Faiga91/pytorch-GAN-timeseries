@@ -127,8 +127,8 @@ if __name__ == "__main__":
     #30-dimensional noise
     input = torch.randn(8, 32, 30)
 
-    gen = CausalConvGenerator(noise_size=30, output_size=1, n_layers=8, n_channel=10, kernel_size=8, dropout=0)
-    dis = CausalConvDiscriminator(input_size=1, n_layers=8, n_channel=10, kernel_size=8, dropout=0)
+    gen = CausalConvGenerator(noise_size=30, output_size=4, n_layers=8, n_channel=10, kernel_size=8, dropout=0)
+    dis = CausalConvDiscriminator(input_size=4, n_layers=8, n_channel=10, kernel_size=8, dropout=0)
 
     print("Input shape:", input.size())
     fake = gen(input)
