@@ -20,7 +20,7 @@ def time_series_to_plot(time_series_batch, dpi=35, feature_idx=0, n_images_per_r
     images = []
     for i, series in enumerate(time_series_batch.detach()):
         fig = plt.figure(dpi=dpi)
-        ax = fig.add_subplot(1,1,1)
+        ax = fig.add_subplot(2,2,1)
         if titles:
             ax.set_title(titles[i])
         ax.plot(series[:, feature_idx].cpu().detach().numpy()) #plots a single feature of the time series

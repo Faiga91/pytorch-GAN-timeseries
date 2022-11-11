@@ -45,20 +45,23 @@ def plot_helper(fake_df, ori_data):
     This helper will get the no of columns and rows for subplot,
     and plot the fake versus the original data.
     """
-    fig, axes = plt.subplots(figsize=(15,7), dpi=700)
+    fig, axes = plt.subplots(2, 2, figsize=(15,7), dpi=700)
 
-    plt.plot(fake_df['Temperature'], label ='Fake')
-    plt.plot(ori_data['Temperature'][:168], label ='Real')
-    plt.title(str('Temperature'))
+    axes_list = [axes[0,0], axes[0,1], axes[1,0], axes[1,1]]
+    for i, col in enumerate(fake_df.columns):
+        axes_list[i].plot(fake_df[col], label ='Fake')
+        axes_list[i].plot(ori_data[col][:168], label ='Real')
 
-    _rmse = mean_squared_error(ori_data['Temperature'][:168], fake_df['Temperature'], squared = False)
-    _rmse_text = 'RMSE = ' + str(round(_rmse,2))
-    axes.text(0.2, 0.9, _rmse_text, horizontalalignment='center', 
-                verticalalignment='center', transform=axes.transAxes,
+        _rmse = mean_squared_error(ori_data[col][:168], fake_df[col], squared = False)
+        _rmse_text = 'RMSE = ' + str(round(_rmse,2))
+        axes_list[i].text(0.2, 0.9, _rmse_text, horizontalalignment='center', 
+                verticalalignment='center', transform=axes_list[i].transAxes,
                 bbox=dict(facecolor='red', alpha=0.2))
+        axes_list[i].title.set_text(str(col))
 
-    plt.legend()
-    plt.suptitle('Real Vs. Synthetic data')
+        axes_list[i].legend()
+        plt.suptitle('Real Vs. Synthetic data')
+    
     fig.savefig('./Results/realvfake.png', bbox_inches='tight', dpi=700)
     plt.show()
 
@@ -66,7 +69,7 @@ def plot_generated_data(folder):
     """
     Plot generated vs real data on the same graph.
     """
-    ori_data = pd.read_csv('data.csv')[['Temperature']]
+    ori_data = pd.read_csv('data.csv')[['Temperature', 'Humidity', 'Light', 'Voltage']]
     dataset_loader = IntelDataset('data.csv')
     pkl_files = glob.glob(folder + "*.pkl")
     for file_name in pkl_files:
@@ -79,7 +82,7 @@ def plot_generated_data(folder):
         generated_data = generated_data.cpu().detach().numpy()
         generated_data = generated_data.reshape(generated_data.shape[1], generated_data.shape[2])
 
-        fake_df = pd.DataFrame(generated_data, columns=['Temperature'])
+        fake_df = pd.DataFrame(generated_data, columns=['Temperature', 'Humidity', 'Light', 'Voltage'])
         plot_helper(fake_df, ori_data[:168])
 
 def main(args):
