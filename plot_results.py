@@ -78,10 +78,10 @@ def plot_generated_data(folder):
         summary(generator_)
         noise = torch.randn(1, 168, 101, device='cuda')
         generated_data = generator_(noise)
-        generated_data = dataset_loader.denormalize(generated_data)
         generated_data = generated_data.cpu().detach().numpy()
         generated_data = generated_data.reshape(generated_data.shape[1], generated_data.shape[2])
-
+        generated_data = dataset_loader.denormalize(generated_data)
+        
         fake_df = pd.DataFrame(generated_data, columns=['Temperature', 'Humidity', 'Light', 'Voltage'])
         plot_helper(fake_df, ori_data[:168])
 
