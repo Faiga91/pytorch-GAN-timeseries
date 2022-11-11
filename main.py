@@ -12,7 +12,7 @@ import torchvision
 import datetime
 from load_dataset import IntelDataset
 from utils import time_series_to_plot
-from tensorboardX import SummaryWriter
+#from tensorboardX import SummaryWriter
 from models.recurrent_models import LSTMGenerator, LSTMDiscriminator, GRUGenerator
 from models.convolutional_models import CausalConvGenerator, CausalConvDiscriminator
 
@@ -45,8 +45,8 @@ opt = parser.parse_args()
 date = datetime.datetime.now().strftime("%d-%m-%y_%H:%M")
 run_name = f"{opt.run_tag}_{date}" if opt.run_tag != '' else date
 log_dir_name = os.path.join(opt.logdir, run_name)
-writer = SummaryWriter(log_dir_name)
-writer.add_text('Options', str(opt), 0)
+#writer = SummaryWriter(log_dir_name)
+#writer.add_text('Options', str(opt), 0)
 print(opt)
 
 try:
@@ -165,8 +165,8 @@ for epoch in range(opt.epochs):
         optimizerD.step()
         
         #Visualize discriminator gradients
-        for name, param in netD.named_parameters():
-            writer.add_histogram("DiscriminatorGradients/{}".format(name), param.grad, niter)
+        #for name, param in netD.named_parameters():
+            #writer.add_histogram("DiscriminatorGradients/{}".format(name), param.grad, niter)
 
         ############################
         # (2) Update G network: maximize log(D(G(z)))
@@ -195,8 +195,8 @@ for epoch in range(opt.epochs):
         optimizerG.step()
         
         #Visualize generator gradients
-        for name, param in netG.named_parameters():
-            writer.add_histogram("GeneratorGradients/{}".format(name), param.grad, niter)
+        #for name, param in netG.named_parameters():
+            #writer.add_histogram("GeneratorGradients/{}".format(name), param.grad, niter)
         
         ###########################
         # (3) Supervised update of G network: minimize mse of input deltas and actual deltas of generated sequences
@@ -207,13 +207,13 @@ for epoch in range(opt.epochs):
               % (epoch, opt.epochs, i, len(dataloader),
                  errD.item(), errG.item(), D_x, D_G_z1, D_G_z2), end='')
         if opt.delta_condition:
-            writer.add_scalar('MSE of deltas of generated sequences', delta_loss.item(), niter)
+            #writer.add_scalar('MSE of deltas of generated sequences', delta_loss.item(), niter)
             print(' DeltaMSE: %.4f' % (delta_loss.item()/opt.delta_lambda), end='')
         print()
-        writer.add_scalar('DiscriminatorLoss', errD.item(), niter)
-        writer.add_scalar('GeneratorLoss', errG.item(), niter)
-        writer.add_scalar('D of X', D_x, niter) 
-        writer.add_scalar('D of G of z', D_G_z1, niter)
+        #writer.add_scalar('DiscriminatorLoss', errD.item(), niter)
+        #writer.add_scalar('GeneratorLoss', errG.item(), niter)
+        #writer.add_scalar('D of X', D_x, niter) 
+        #writer.add_scalar('D of G of z', D_G_z1, niter)
 
         g_losses.append(errG.item())
         d_losses.append(errD.item())
@@ -222,14 +222,14 @@ for epoch in range(opt.epochs):
 
     ##### End of the epoch #####
     real_plot = time_series_to_plot(dataset.denormalize(real_display))
-    if (epoch % opt.tensorboard_image_every == 0) or (epoch == (opt.epochs - 1)):
-        writer.add_image("Real", real_plot, epoch)
+    #if (epoch % opt.tensorboard_image_every == 0) or (epoch == (opt.epochs - 1)):
+        #writer.add_image("Real", real_plot, epoch)
 
     fake = netG(fixed_noise)
     fake_plot = time_series_to_plot(dataset.denormalize(fake))
     #torchvision.utils.save_image(fake_plot, os.path.join(opt.imf, opt.run_tag+'_epoch'+str(epoch)+'.jpg'))
-    if (epoch % opt.tensorboard_image_every == 0) or (epoch == (opt.epochs - 1)):
-        writer.add_image("Fake", fake_plot, epoch)
+    #if (epoch % opt.tensorboard_image_every == 0) or (epoch == (opt.epochs - 1)):
+        #writer.add_image("Fake", fake_plot, epoch)
                              
     # Checkpoint
     if (epoch % opt.checkpoint_every == 0) or (epoch == (opt.epochs - 1)):
