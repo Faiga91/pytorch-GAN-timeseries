@@ -64,13 +64,12 @@ class IntelDataset(Dataset):
         """
         df = pd.read_csv(csv_file)
         df['Timestamp'] = pd.to_datetime(df['Timestamp'])
-        df = df[['Temperature', 'Timestamp']]
+        df = df[['Temperature', 'Humidity', 'Light', 'Voltage', 'Timestamp']]
         df = df.set_index("Timestamp")
-        Temperature = df.Temperature
         # TODO Check latter what type of data grouping we would like
-        data_list = [group[1].values for group in Temperature.groupby(df.index.date)]
+        data_list = [group[1].values for group in df.groupby(df.index.date)]
         # Up to 500 it has the same size 
-        arr1 = np.vstack([d[:500] for d in data_list])
+        arr1 = np.vstack([d for d in data_list])
         data = torch.FloatTensor(arr1)
         data  = data.view(data.shape[0], data.shape[1], 1)
         #data = torch.from_numpy(np.expand_dims(np.array([group[1].values for group in Temperature.groupby(df.index.date)]), -1)).float()
