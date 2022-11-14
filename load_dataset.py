@@ -113,4 +113,3 @@ class IntelDataset(Dataset):
     
     def normalize_deltas(self, x):
         return ((self.delta_max - self.delta_min) * (x - self.or_delta_min)/(self.or_delta_max - self.or_delta_min) + self.delta_min)
-    

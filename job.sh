@@ -1,5 +1,10 @@
 #!/bin/bash
 
-python main.py --dataset_path data.csv --delta_condition --gen_type gru  --dis_type cnn --alternate --run_tag cnn_dis_lstm_gen_alternte_my_first_trial  --cuda --epochs 5000 --batchSize 7
+for loss in 'gan' 'lsgan' 'wgan'
+do
+echo Now lets us run a model with $loss
+python main.py --dataset_path data.csv --delta_condition --alternate --cuda --epochs 500 --batchSize 7  --loss_fun $loss
+echo "Success!" ||  echo "It failed!"
+done
 
 #python plot_results.py --folder './Results/'
