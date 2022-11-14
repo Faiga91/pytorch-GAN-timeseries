@@ -82,13 +82,13 @@ class IntelDataset(Dataset):
         self.seq_len = self.data.size(1)
         
         #Estimates distribution parameters of deltas (Gaussian) from normalized data
-        original_deltas = self.data[:, -1] - self.data[:, 0]
+        original_deltas = self.data[:, :, -1] - self.data[:,: , 0]
         self.original_deltas = original_deltas
-        self.or_delta_max, self.or_delta_min = original_deltas.max(), original_deltas.min() 
-        deltas = self.data[:, -1] - self.data[:, 0]
+        #self.or_delta_max, self.or_delta_min = original_deltas.max(), original_deltas.min() 
+        deltas = self.data[:, :, -1] - self.data[:,:, 0]
         self.deltas = deltas
         self.delta_mean, self.delta_std = deltas.mean(), deltas.std()
-        self.delta_max, self.delta_min = deltas.max(), deltas.min()
+        #self.delta_max, self.delta_min = deltas.max(), deltas.min()
 
     def __len__(self):
         return len(self.data)
@@ -110,6 +110,3 @@ class IntelDataset(Dataset):
     def sample_deltas(self, number):
         """Sample a vector of (number) deltas from the fitted Gaussian"""
         return (torch.randn(number, 1) + self.delta_mean) * self.delta_std
-    
-    def normalize_deltas(self, x):
-        return ((self.delta_max - self.delta_min) * (x - self.or_delta_min)/(self.or_delta_max - self.or_delta_min) + self.delta_min)

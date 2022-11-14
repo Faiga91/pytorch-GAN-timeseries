@@ -30,6 +30,7 @@ def plot_losses(folder):
     csv_files = glob.glob(folder + "*.csv")
     for file_ in csv_files:
         loss_df = pd.read_csv(file_)
+        save_name = file_[15:-4]
         fig, axes = plt.subplots(1, 2 , figsize=(7,3.5), dpi=700)
         axes[0].plot(loss_df['dloss'], label = 'dloss')
         axes[0].plot(loss_df['gloss'], label = 'gloss')
@@ -38,9 +39,9 @@ def plot_losses(folder):
         axes[0].legend()
         axes[1].legend()
         plt.show()
-        plt.savefig(folder + "losses.png", bbox_inches='tight', dpi=700)
+        plt.savefig(folder + 'losses' + str(save_name) + '.png', bbox_inches='tight', dpi=700)
 
-def plot_helper(fake_df, ori_data):
+def plot_helper(fake_df, ori_data, model_name):
     """
     This helper will get the no of columns and rows for subplot,
     and plot the fake versus the original data.
@@ -62,7 +63,7 @@ def plot_helper(fake_df, ori_data):
         axes_list[i].legend()
         plt.suptitle('Real Vs. Synthetic data')
     
-    fig.savefig('./Results/realvfake.png', bbox_inches='tight', dpi=700)
+    fig.savefig('./Results/realvfake' + str(model_name) + '.png', bbox_inches='tight', dpi=700)
     plt.show()
 
 def plot_generated_data(folder):
@@ -73,7 +74,7 @@ def plot_generated_data(folder):
     dataset_loader = IntelDataset('data.csv')
     pkl_files = glob.glob(folder + "*.pkl")
     for file_name in pkl_files:
-        model_name = file_name[7:-4]
+        model_name = file_name[15:-4]
         generator_ = torch.load(file_name, map_location ='cuda')
         summary(generator_)
         noise = torch.randn(1, 168, 101, device='cuda')
@@ -83,7 +84,7 @@ def plot_generated_data(folder):
         generated_data = dataset_loader.denormalize(generated_data)
         
         fake_df = pd.DataFrame(generated_data, columns=['Temperature', 'Humidity', 'Light', 'Voltage'])
-        plot_helper(fake_df, ori_data[:168])
+        plot_helper(fake_df, ori_data[:168], model_name) 
 
 def main(args):
     """

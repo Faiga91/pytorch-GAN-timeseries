@@ -196,8 +196,8 @@ for epoch in range(opt.epochs):
             if opt.alternate:
                 optimizerG.step()
                 netG.zero_grad()
-            noise = torch.randn(batch_size, seq_len, nz, device=device)
-            deltas = dataset.sample_deltas(batch_size).unsqueeze(2).repeat(1, seq_len, 1)
+            noise = torch.randn(batch_size, seq_len, nz - 3, device=device)
+            deltas = dataset.sample_deltas(batch_size).unsqueeze(2).repeat(1, seq_len, 4)
             deltas = deltas.to(device)
             noise = torch.cat((noise, deltas), dim=2)
             #Generate sequence given noise w/ deltas and deltas
