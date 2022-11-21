@@ -42,6 +42,8 @@ parser.add_argument('--dis_type', default='cnn', choices=['cnn','lstm'], help='a
 parser.add_argument('--gen_type', default='gru', choices=['cnn','lstm', 'gru'], help='architecture to be used for generator to use')
 opt = parser.parse_args()
 
+plot_during_trainig = False
+
 #Create writer for tensorboard
 date = datetime.datetime.now().strftime("%d-%m-%y_%H:%M")
 run_name = f"{opt.run_tag}_{date}" if opt.run_tag != '' else date
@@ -241,20 +243,21 @@ for epoch in range(opt.epochs):
     
         fake = netG(fixed_noise)
 
-        #Plot noise, fake and real signals 
-        plt.style.use('fivethirtyeight')
-        plt.figure(figsize=(20,7), dpi=300)
-        plt.rcParams["font.size"] = 18
-        ax = plt.subplot(131)
-        ax.plot(fixed_noise[0, :].cpu().detach().numpy())
-        ax.set_title('Noise')
-        ax = plt.subplot(132)
-        ax.plot(fake[0, :].cpu().detach().numpy())
-        ax.set_title('fake')
-        ax = plt.subplot(133)
-        ax.plot(real_display[0, :,].cpu().detach().numpy())
-        ax.set_title('Real')
-        plt.show()
+        #Plot noise, fake and real signals
+        if plot_during_trainig:
+            plt.style.use('fivethirtyeight')
+            plt.figure(figsize=(20,7), dpi=300)
+            plt.rcParams["font.size"] = 18
+            ax = plt.subplot(131)
+            ax.plot(fixed_noise[0, :].cpu().detach().numpy())
+            ax.set_title('Noise')
+            ax = plt.subplot(132)
+            ax.plot(fake[0, :].cpu().detach().numpy())
+            ax.set_title('fake')
+            ax = plt.subplot(133)
+            ax.plot(real_display[0, :,].cpu().detach().numpy())
+            ax.set_title('Real')
+            plt.show()
 
 torch.save(netG, './Results/netG.pkl')
 loss_df = pd.DataFrame(columns = ['gloss', 'dloss', 'dxloss', 'dgzloss'])
