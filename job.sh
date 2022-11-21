@@ -7,8 +7,8 @@
 #echo "Success!" ||  echo "It failed!"
 #done
 
-python main.py --dataset_path data.csv --delta_condition --alternate --cuda --epochs 500 --batchSize 7 
+python main.py --dataset_path data.csv --delta_condition --alternate --cuda --epochs 1500 --batchSize 7 
 
 python plot_results.py --folder './Results/'
 
-python generate_dataset.py --dataset_path data.csv --delta_path delta_trial.txt --checkpoint_path checkpoints/_netG_epoch_499.pth --output_path './Results/prova.npy' 
+python generate_dataset.py --dataset_path data.csv --delta_path delta_trial.txt --checkpoint_path checkpoints/_netG_epoch_50.pth --output_path './Results/prova.npy' 

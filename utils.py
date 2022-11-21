@@ -68,7 +68,7 @@ class DatasetGenerator:
         #If conditional generation is required, then input for generator must contain deltas
         if delta_list:
             noise = torch.randn(len(delta_list), self.seq_len, self.noise_dim) 
-            deltas = torch.FloatTensor(delta_list).view(-1, 1, 1).repeat(1, self.seq_len, 1)
+            deltas = torch.FloatTensor(delta_list).view(-1, 1, 4).repeat(len(delta_list), self.seq_len, 1)
             #if self.dataset:
                 #Deltas are provided in original range, normalization required
                 #deltas = self.dataset.normalize_deltas(deltas)
@@ -82,14 +82,13 @@ class DatasetGenerator:
             out_list.append(self.generator(batch))
         out_tensor = torch.cat(out_list, dim=0)
         out_tensor = out_tensor.cpu().detach().numpy()
-        print(out_tensor.shape)
-        out_tensor = out_tensor.reshape(out_tensor.shape[1], out_tensor.shape[2])
+        out_tensor = out_tensor.reshape(out_tensor.shape[0] * out_tensor.shape[1], out_tensor.shape[2])
         #Puts generated sequences in original range
         if self.dataset:
             out_tensor = self.dataset.denormalize(out_tensor)
 
         if outfile:
-            np.save(outfile, out_tensor.detach().numpy())
+            np.save(outfile, out_tensor)
         else:
             return out_tensor 
 
