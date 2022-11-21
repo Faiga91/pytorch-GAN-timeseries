@@ -68,7 +68,7 @@ class IntelDataset(Dataset):
         df = df.set_index("Timestamp")
         df = df[['Temperature', 'Humidity', 'Light', 'Voltage', 'mote_id']]
         df_ = df[['Temperature', 'Humidity', 'Light', 'Voltage']]
-        df_ = self.normalize(df_) if normalize else data
+        df_ = self.normalize(df_) if normalize else df_
         df_ = pd.DataFrame(df_, columns = ['Temperature', 'Humidity', 'Light', 'Voltage'])
         df_['Timestamp'] = df.index
         df_ = df_.set_index("Timestamp")

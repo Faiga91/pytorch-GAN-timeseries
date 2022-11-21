@@ -13,7 +13,6 @@ import torchvision
 import datetime
 from load_dataset import IntelDataset
 from utils import time_series_to_plot
-from loss_functions import *
 #from tensorboardX import SummaryWriter
 from models.recurrent_models import LSTMGenerator, LSTMDiscriminator, GRUGenerator
 from models.convolutional_models import CausalConvGenerator, CausalConvDiscriminator
@@ -29,27 +28,19 @@ parser.add_argument('--lr', type=float, default=0.0002, help='learning rate, def
 parser.add_argument('--cuda', action='store_true', help='enables cuda')
 parser.add_argument('--netG', default='', help="path to netG (to continue training)")
 parser.add_argument('--netD', default='', help="path to netD (to continue training)")
-#parser.add_argument('--outf', default='checkpoints', help='folder to save checkpoints')
+parser.add_argument('--outf', default='checkpoints', help='folder to save checkpoints')
 #parser.add_argument('--imf', default='images', help='folder to save images')
 parser.add_argument('--manualSeed', type=int, help='manual seed')
 parser.add_argument('--logdir', default='log', help='logdir for tensorboard')
 parser.add_argument('--run_tag', default='', help='tags for the current run')
-parser.add_argument('--checkpoint_every', default=5, help='number of epochs after which saving checkpoints') 
+parser.add_argument('--checkpoint_every', default=50, help='number of epochs after which saving checkpoints') 
 parser.add_argument('--tensorboard_image_every', default=5, help='interval for displaying images on tensorboard') 
 parser.add_argument('--delta_condition', action='store_true', help='whether to use the mse loss for deltas')
 parser.add_argument('--delta_lambda', type=int, default=10, help='weight for the delta condition')
 parser.add_argument('--alternate', action='store_true', help='whether to alternate between adversarial and mse loss in generator')
 parser.add_argument('--dis_type', default='cnn', choices=['cnn','lstm'], help='architecture to be used for discriminator to use')
 parser.add_argument('--gen_type', default='gru', choices=['cnn','lstm', 'gru'], help='architecture to be used for generator to use')
-parser.add_argument('--loss_fun', default='gan', choices=['gan', 'lsgan','wgan', 'wgan_gp', 'dragan'], type=str)
 opt = parser.parse_args()
-
-dispatcher = {'gan_gloss': gan_gloss, 'gan_dloss': gan_dloss,
-                  'lsgan_gloss': lsgan_gloss, 'lsgan_dloss': lsgan_dloss,
-                  'wgan_gloss': wgan_gloss, 'wgan_dloss': wgan_dloss}
-
-gloss_fun = dispatcher[opt.loss_fun + '_gloss']
-dloss_fun = dispatcher[opt.loss_fun + '_dloss']
 
 #Create writer for tensorboard
 date = datetime.datetime.now().strftime("%d-%m-%y_%H:%M")
@@ -59,10 +50,10 @@ log_dir_name = os.path.join(opt.logdir, run_name)
 #writer.add_text('Options', str(opt), 0)
 #print(opt)
 
-#try:
-    #os.makedirs(opt.outf)
-#except OSError:
-    #pass
+try:
+    os.makedirs(opt.outf)
+except OSError:
+    pass
 #try:
     #os.makedirs(opt.imf)
 #except OSError:
@@ -115,7 +106,7 @@ if opt.netD != '':
 #print("|Discriminator Architecture|\n", netD)
 #print("|Generator Architecture|\n", netG)
 
-#criterion = nn.BCELoss().to(device)
+criterion = nn.BCELoss().to(device)
 delta_criterion = nn.MSELoss().to(device)
 
 #Generate fixed noise to be used for visualization
@@ -155,7 +146,7 @@ for epoch in range(opt.epochs):
         label = torch.full((batch_size, seq_len, 1), real_label, device=device).to(torch.float32)
 
         output_r = netD(real)
-        errD_real = gloss_fun(output_r)
+        errD_real = criterion(output_r, label)
         errD_real.backward() 
         D_x = output_r.mean().item()
         
@@ -169,12 +160,10 @@ for epoch in range(opt.epochs):
         fake = netG(noise)
         label.fill_(fake_label)
         output_f = netD(fake.detach())
-        errD_fake = gloss_fun(output_f)
+        errD_fake = criterion(output_f, label)
         errD_fake.backward()
         D_G_z1 = output_f.mean().item()
-        errD =  dloss_fun(output_f, output_r)
-        if opt.loss_fun == 'wgan':
-                torch.nn.utils.clip_grad_norm_(netD.parameters(), 0.01)
+        errD =  errD_real + errD_fake
         optimizerD.step()
 
         #Visualize discriminator gradients
@@ -187,7 +176,7 @@ for epoch in range(opt.epochs):
         netG.zero_grad()
         label.fill_(real_label) 
         output = netD(fake)
-        errG = gloss_fun(output)
+        errG = criterion(output, label)
         errG.backward()
         D_G_z2 = output.mean().item()
 
@@ -240,9 +229,9 @@ for epoch in range(opt.epochs):
         #writer.add_image("Fake", fake_plot, epoch)
                              
     # Checkpoint
-    #if (epoch % opt.checkpoint_every == 0) or (epoch == (opt.epochs - 1)):
-        #torch.save(netG, '%s/%s_netG_epoch_%d.pth' % (opt.outf, opt.run_tag, epoch))
-        #torch.save(netD, '%s/%s_netD_epoch_%d.pth' % (opt.outf, opt.run_tag, epoch))
+    if (epoch % opt.checkpoint_every == 0) or (epoch == (opt.epochs - 1)):
+        torch.save(netG, '%s/%s_netG_epoch_%d.pth' % (opt.outf, opt.run_tag, epoch))
+        torch.save(netD, '%s/%s_netD_epoch_%d.pth' % (opt.outf, opt.run_tag, epoch))
     
     if epoch % 10 == 0:
         #Report metrics
@@ -267,7 +256,7 @@ for epoch in range(opt.epochs):
         ax.set_title('Real')
         plt.show()
 
-torch.save(netG, './Results/netG_' + opt.loss_fun  + '.pkl')
+torch.save(netG, './Results/netG.pkl')
 loss_df = pd.DataFrame(columns = ['gloss', 'dloss', 'dxloss', 'dgzloss'])
 loss_df['gloss'], loss_df['dloss'], loss_df['dxloss'], loss_df['dgzloss'] = g_losses, d_losses, dx_loss, dgz_loss
-loss_df.to_csv('./Results/losses_' + opt.loss_fun + '.csv', index = False)
+loss_df.to_csv('./Results/losses.csv', index = False)
