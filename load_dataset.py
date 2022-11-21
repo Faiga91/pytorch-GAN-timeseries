@@ -108,4 +108,4 @@ class IntelDataset(Dataset):
     
     def sample_deltas(self, number):
         """Sample a vector of (number) deltas from the fitted Gaussian"""
-        return (torch.randn(number, 1) + self.delta_mean) * self.delta_std
+        return (torch.randn(number, 1 ,4) + self.delta_mean) * self.delta_std

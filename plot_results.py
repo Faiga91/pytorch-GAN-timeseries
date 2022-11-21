@@ -62,7 +62,7 @@ def plot_helper(fake_df, ori_data, model_name):
 
         axes_list[i].legend()
         plt.suptitle('Real Vs. Synthetic data')
-    
+
     fig.savefig('./Results/realvfake' + str(model_name) + '.png', bbox_inches='tight', dpi=700)
     plt.show()
 
