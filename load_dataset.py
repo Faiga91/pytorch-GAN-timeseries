@@ -53,10 +53,9 @@ class BtpDataset(Dataset):
     
     def normalize_deltas(self, x):
         return ((self.delta_max - self.delta_min) * (x - self.or_delta_min)/(self.or_delta_max - self.or_delta_min) + self.delta_min)
-    
 
 class IntelDataset(Dataset):
-    """Btp time series dataset."""
+    """Intel lab dataset."""
     def __init__(self, csv_file, normalize=True):
         """
         Args:
@@ -82,7 +81,7 @@ class IntelDataset(Dataset):
         self.seq_len = self.data.size(1)
         
         #Estimates distribution parameters of deltas (Gaussian) from normalized data
-        original_deltas = self.data[:, :, -1] - self.data[:,: , 0]
+        original_deltas = self.data[:, :-1, :] - self.data[:, 1: , :]
         self.original_deltas = original_deltas
         #self.or_delta_max, self.or_delta_min = original_deltas.max(), original_deltas.min() 
         deltas = self.data[:, :, -1] - self.data[:,:, 0]

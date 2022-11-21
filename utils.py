@@ -69,9 +69,9 @@ class DatasetGenerator:
         if delta_list:
             noise = torch.randn(len(delta_list), self.seq_len, self.noise_dim) 
             deltas = torch.FloatTensor(delta_list).view(-1, 1, 1).repeat(1, self.seq_len, 1)
-            if self.dataset:
+            #if self.dataset:
                 #Deltas are provided in original range, normalization required
-                deltas = self.dataset.normalize_deltas(deltas)
+                #deltas = self.dataset.normalize_deltas(deltas)
             noise = torch.cat((noise, deltas), dim=2)
         else:
             noise = torch.randn(size, self.seq_len, self.noise_dim) 
