@@ -17,6 +17,8 @@ from utils import time_series_to_plot
 from models.recurrent_models import LSTMGenerator, LSTMDiscriminator, GRUGenerator
 from models.convolutional_models import CausalConvGenerator, CausalConvDiscriminator
 
+print("\n -----------------------\n")
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', default='intel', choices = ['btp', 'intel'], help='dataset to use (only btp for now)')
 parser.add_argument('--dataset_path', required=True, help='path to dataset')
@@ -83,7 +85,7 @@ nz = int(opt.nz)
 #Retrieve the sequence length as first dimension of a sequence in the dataset
 seq_len = dataset[0].size(0)
 #An additional input is needed for the delta
-in_dim = opt.nz + 1 if opt.delta_condition else opt.nz
+in_dim = opt.nz + 4 if opt.delta_condition else opt.nz 
 
 if opt.dis_type == "lstm": 
     netD = LSTMDiscriminator(in_dim=1, hidden_dim=256).to(device)
@@ -116,7 +118,8 @@ fixed_noise = torch.randn(opt.batchSize, seq_len, nz, device=device)
 
 if opt.delta_condition:
     #Sample both deltas and noise for visualization
-    deltas = dataset.sample_deltas(opt.batchSize).unsqueeze(2).repeat(1, seq_len, 1)
+    #deltas = dataset.sample_deltas(opt.batchSize).unsqueeze(2).repeat(1, seq_len, 1)
+    deltas = dataset.sample_deltas(opt.batchSize).repeat(1, seq_len, 1)
     deltas = deltas.to(device)
     fixed_noise = torch.cat((fixed_noise, deltas), dim=2)
 
@@ -156,7 +159,8 @@ for epoch in range(opt.epochs):
         noise = torch.randn(batch_size, seq_len, nz, device=device)
         if opt.delta_condition:
             #Sample a delta for each batch and concatenate to the noise for each timestep
-            deltas = dataset.sample_deltas(batch_size).unsqueeze(2).repeat(1, seq_len, 1)
+            #deltas = dataset.sample_deltas(batch_size).unsqueeze(2).repeat(1, seq_len, 1)
+            deltas = dataset.sample_deltas(batch_size).repeat(1, seq_len, 1)
             deltas = deltas.to(device)
             noise = torch.cat((noise, deltas), dim=2)
         fake = netG(noise)
@@ -187,8 +191,8 @@ for epoch in range(opt.epochs):
             if opt.alternate:
                 optimizerG.step()
                 netG.zero_grad()
-            noise = torch.randn(batch_size, seq_len, nz - 3, device=device)
-            deltas = dataset.sample_deltas(batch_size).unsqueeze(2).repeat(1, seq_len, 4)
+            noise = torch.randn(batch_size, seq_len, nz, device=device)
+            deltas = dataset.sample_deltas(batch_size).repeat(1, seq_len, 1)
             deltas = deltas.to(device)
             noise = torch.cat((noise, deltas), dim=2)
             #Generate sequence given noise w/ deltas and deltas
