@@ -77,10 +77,13 @@ class DatasetGenerator:
             noise = torch.randn(size, self.seq_len, self.noise_dim) 
         
         out_list = []
+        noise = noise.to(device='cuda')
         for batch in noise.split(batch_size):
             out_list.append(self.generator(batch))
         out_tensor = torch.cat(out_list, dim=0)
-         
+        out_tensor = out_tensor.cpu().detach().numpy()
+        print(out_tensor.shape)
+        out_tensor = out_tensor.reshape(out_tensor.shape[1], out_tensor.shape[2])
         #Puts generated sequences in original range
         if self.dataset:
             out_tensor = self.dataset.denormalize(out_tensor)
@@ -89,7 +92,6 @@ class DatasetGenerator:
             np.save(outfile, out_tensor.detach().numpy())
         else:
             return out_tensor 
-
 
 if __name__ == "__main__":
     model = torch.load('checkpoints/cnn_conditioned_alternate1_netG_epoch_85.pth') 

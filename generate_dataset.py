@@ -12,6 +12,7 @@ parser.add_argument('--dataset_path', required=True, help="Path of the dataset f
 parser.add_argument('--size', default=1000, help='Size of the dataset to generate in case of unconditional generation')
 opt = parser.parse_args()
 
+print("\n -----------------------\n")
 #If an unknown option is provided for the dataset, then don't use any normalization
 dataset = IntelDataset(opt.dataset_path) if opt.dataset == 'intel' else None
 
