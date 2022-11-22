@@ -43,7 +43,7 @@ def tensor_to_string_list(tensor):
     return ["%.5f" % scalar for scalar in scalar_list]
 
 class DatasetGenerator:
-    def __init__(self, generator, seq_len=96, noise_dim=100, dataset=None):
+    def __init__(self, generator, seq_len=24, noise_dim=100, dataset=None):
         """Class for fake dataset generation
         Args:
             generator (pytorch module): trained generator to use
@@ -67,8 +67,8 @@ class DatasetGenerator:
         """
         #If conditional generation is required, then input for generator must contain deltas
         if delta_list:
-            noise = torch.randn(len(delta_list), self.seq_len, self.noise_dim) 
-            deltas = torch.FloatTensor(delta_list).view(-1, 1, 4).repeat(len(delta_list), self.seq_len, 1)
+            noise = torch.randn(len(delta_list), self.seq_len, self.noise_dim)
+            deltas = torch.FloatTensor(delta_list).view(len(delta_list), 1, 1).repeat(1, self.seq_len, 4)
             #if self.dataset:
                 #Deltas are provided in original range, normalization required
                 #deltas = self.dataset.normalize_deltas(deltas)

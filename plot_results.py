@@ -28,18 +28,19 @@ def plot_losses(folder):
     Plot the generator and discriminator losses on the same graph.
     """
     csv_files = glob.glob(folder + "*.csv")
-    for file_ in csv_files:
-        loss_df = pd.read_csv(file_)
-        save_name = file_[15:-4]
-        fig, axes = plt.subplots(1, 2 , figsize=(7,3.5), dpi=700)
-        axes[0].plot(loss_df['dloss'], label = 'dloss')
-        axes[0].plot(loss_df['gloss'], label = 'gloss')
-        axes[1].plot(loss_df['dxloss'], label = 'dxloss')
-        axes[1].plot(loss_df['dgzloss'], label = 'dgzloss')
-        axes[0].legend()
-        axes[1].legend()
-        plt.show()
-        plt.savefig(folder + 'losses' + str(save_name) + '.png', bbox_inches='tight', dpi=700)
+    if csv_files:
+        for file_ in csv_files:
+            loss_df = pd.read_csv(file_)
+            save_name = file_[15:-4]
+            fig, axes = plt.subplots(1, 2 , figsize=(7,3.5), dpi=700)
+            axes[0].plot(loss_df['dloss'], label = 'dloss')
+            axes[0].plot(loss_df['gloss'], label = 'gloss')
+            axes[1].plot(loss_df['dxloss'], label = 'dxloss')
+            axes[1].plot(loss_df['dgzloss'], label = 'dgzloss')
+            axes[0].legend()
+            axes[1].legend()
+            plt.show()
+            plt.savefig(folder + 'losses' + str(save_name) + '.png', bbox_inches='tight', dpi=700)
 
 def plot_helper(fake_df, ori_data, model_name):
     """
@@ -51,9 +52,9 @@ def plot_helper(fake_df, ori_data, model_name):
     axes_list = [axes[0,0], axes[0,1], axes[1,0], axes[1,1]]
     for i, col in enumerate(fake_df.columns):
         axes_list[i].plot(fake_df[col], label ='Fake')
-        axes_list[i].plot(ori_data[col][:168], label ='Real')
+        axes_list[i].plot(ori_data[col], label ='Real')
 
-        _rmse = mean_squared_error(ori_data[col][:168], fake_df[col], squared = False)
+        _rmse = mean_squared_error(ori_data[col], fake_df[col], squared = False)
         _rmse_text = 'RMSE = ' + str(round(_rmse,2))
         axes_list[i].text(0.2, 0.9, _rmse_text, horizontalalignment='center', 
                 verticalalignment='center', transform=axes_list[i].transAxes,
@@ -66,25 +67,33 @@ def plot_helper(fake_df, ori_data, model_name):
     fig.savefig('./Results/realvfake' + str(model_name) + '.png', bbox_inches='tight', dpi=700)
     plt.show()
 
-def plot_generated_data(folder):
+def plot_generated_data(folder, g_data):
     """
     Plot generated vs real data on the same graph.
     """
-    ori_data = pd.read_csv('data.csv')[['Temperature', 'Humidity', 'Light', 'Voltage']]
-    dataset_loader = IntelDataset('data.csv')
+    ori_data = pd.read_csv('./data/data.csv')[['Temperature', 'Humidity', 'Light', 'Voltage']]
+    dataset_loader = IntelDataset('./data/data.csv')
     pkl_files = glob.glob(folder + "*.pkl")
-    for file_name in pkl_files:
-        model_name = file_name[15:-4]
-        generator_ = torch.load(file_name, map_location ='cuda')
-        summary(generator_)
-        noise = torch.randn(1, 168, 104, device='cuda')
-        generated_data = generator_(noise)
-        generated_data = generated_data.cpu().detach().numpy()
-        generated_data = generated_data.reshape(generated_data.shape[1], generated_data.shape[2])
-        generated_data = dataset_loader.denormalize(generated_data)
-        
-        fake_df = pd.DataFrame(generated_data, columns=['Temperature', 'Humidity', 'Light', 'Voltage'])
-        plot_helper(fake_df, ori_data[:168], model_name) 
+
+    if pkl_files:
+        for file_name in pkl_files:
+            model_name = file_name[15:-4]
+            generator_ = torch.load(file_name, map_location ='cuda')
+            summary(generator_)
+            noise = torch.randn(1, 168, 104, device='cuda')
+            generated_data = generator_(noise)
+            generated_data = generated_data.cpu().detach().numpy()
+            generated_data = generated_data.reshape(generated_data.shape[1], generated_data.shape[2])
+            generated_data = dataset_loader.denormalize(generated_data)
+            
+            fake_df = pd.DataFrame(generated_data, columns=['Temperature', 'Humidity', 'Light', 'Voltage'])
+            plot_helper(fake_df, ori_data[:168], model_name)
+    
+    gen_data = np.load(g_data)
+    fake_df = pd.DataFrame(gen_data, columns=['Temperature', 'Humidity', 'Light', 'Voltage'])
+    
+    plot_helper(fake_df, ori_data[:gen_data.shape[0]], g_data[10:-4])
+    
 
 def main(args):
     """
@@ -92,10 +101,11 @@ def main(args):
     the other helper functions in this file.
     """
     plot_losses(args.folder)
-    plot_generated_data(args.folder)
+    plot_generated_data(args.folder, args.gen_data)
 
 if __name__ == '__main__':
     parser_ = argparse.ArgumentParser()
-    parser_.add_argument('--folder', type=str)
+    parser_.add_argument('--folder', type=str, default='')
+    parser_.add_argument('--gen_data', type=str, default = './Results/prova.npy')
     args_ = parser_.parse_args()
     main(args_)
