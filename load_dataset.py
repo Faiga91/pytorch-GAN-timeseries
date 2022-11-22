@@ -84,7 +84,7 @@ class IntelDataset(Dataset):
         original_deltas = self.data[:, :-1, :] - self.data[:, 1: , :]
         self.original_deltas = original_deltas
         #self.or_delta_max, self.or_delta_min = original_deltas.max(), original_deltas.min() 
-        deltas = self.data[:, :, -1] - self.data[:,:, 0]
+        deltas = self.data[:, :-1, :] - self.data[:,1:, :]
         self.deltas = deltas
         self.delta_mean, self.delta_std = deltas.mean(), deltas.std()
         #self.delta_max, self.delta_min = deltas.max(), deltas.min()
