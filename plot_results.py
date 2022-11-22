@@ -77,7 +77,7 @@ def plot_generated_data(folder):
         model_name = file_name[15:-4]
         generator_ = torch.load(file_name, map_location ='cuda')
         summary(generator_)
-        noise = torch.randn(1, 168, 101, device='cuda')
+        noise = torch.randn(1, 168, 104, device='cuda')
         generated_data = generator_(noise)
         generated_data = generated_data.cpu().detach().numpy()
         generated_data = generated_data.reshape(generated_data.shape[1], generated_data.shape[2])
