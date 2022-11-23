@@ -17,8 +17,8 @@ python generate_dataset.py --dataset_path './data/data.csv' --delta_path delta_t
 python plot_results.py --gen_data './Results/prova.npy' 
 
 #3A step fine-tune the generator using supervised learning 
-python finetune_model.py --checkpoint_path checkpoints/_netG_epoch_999.pth --output_path './Results/finetuned.pth'
+#python finetune_model.py --checkpoint_path checkpoints/_netG_epoch_999.pth --output_path './Results/finetuned.pth'
 #3B step generate synthetic data from the finetuned model
-python generate_dataset.py --dataset_path './data/data.csv' --delta_path delta_trial.txt --checkpoint_path finetuned2.pth --output_path './Results/tuneprova.npy' 
+#python generate_dataset.py --dataset_path './data/data.csv' --delta_path delta_trial.txt --checkpoint_path './Results/finetuned.pth' --output_path './Results/tuneprova.npy' 
 #3B step plot the results
-python plot_results.py --gen_data './Results/tuneprova.npy'
+#python plot_results.py --gen_data './Results/tuneprova.npy'

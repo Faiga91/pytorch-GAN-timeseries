@@ -91,8 +91,8 @@ def plot_generated_data(folder, g_data):
     
     gen_data = np.load(g_data)
     fake_df = pd.DataFrame(gen_data, columns=['Temperature', 'Humidity', 'Light', 'Voltage'])
-    
-    plot_helper(fake_df, ori_data[:gen_data.shape[0]], g_data[10:-4])
+    ref_data = ori_data[:gen_data.shape[0]].reset_index()
+    plot_helper(fake_df, ref_data, g_data[10:-4])
     
 
 def main(args):
