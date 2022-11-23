@@ -8,7 +8,7 @@
 #done
 
 # 1st step -> train GAN
-python main.py --dataset_path './data/data.csv' --delta_condition --alternate --cuda --epochs 1000 --batchSize 7
+python main.py --dataset_path './data/data.csv' --delta_condition --alternate --cuda --epochs 1500 --batchSize 7
 
 # 2A step generate synthetic data 
 python generate_dataset.py --dataset_path './data/data.csv' --delta_path delta_trial.txt --checkpoint_path checkpoints/_netG_epoch_999.pth --output_path './Results/adaSense.npy' 
