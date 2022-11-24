@@ -47,7 +47,7 @@ class GRUGenerator(nn.Module):
     Output: sequence of shape (batch_size, seq_len, out_dim)
     """
 
-    def __init__(self, in_dim, out_dim, device, n_layers=4, hidden_dim=256):
+    def __init__(self, in_dim, out_dim, device, n_layers=2, hidden_dim=256):
         super().__init__()
         self.n_layers = n_layers
         self.hidden_dim = hidden_dim
