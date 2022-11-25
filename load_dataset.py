@@ -4,6 +4,22 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
+def window_shift(data, _len):
+    """
+    A function for sliding window implementation.
+    Args:
+        - data: the data we want to apply the sliding window to.
+        - len: sequence length for the sliding window.
+    Returns:
+        - shifted_data: a list of arrays.
+    """
+    shifted_data = []
+    shift_ = 12
+    for i in range(0, int((len(data) - _len)/shift_) ):
+        _x = data[i * shift_  : _len + i * shift_]
+        shifted_data.append(_x)
+    return shifted_data
+
 class BtpDataset(Dataset):
     """Btp time series dataset."""
     def __init__(self, csv_file, normalize=True):
@@ -74,9 +90,11 @@ class IntelDataset(Dataset):
         data_list = []
         for group in df_[['Temperature', 'Humidity', 'Light', 'Voltage']].groupby([df.mote_id, df.index.date]):
             if len(group[1]) == 24:
-                data_list.append(group[1].values)    
-            
-        self.data = torch.FloatTensor(np.array(data_list))
+                data_list.append(group[1].values)
+        
+        s_all = np.concatenate(data_list)
+        s_data = window_shift(s_all, 24)
+        self.data = torch.FloatTensor(np.array(s_data))
         #self.data = self.normalize(data) if normalize else data
         self.seq_len = self.data.size(1)
         
